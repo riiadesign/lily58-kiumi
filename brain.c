@@ -1,6 +1,6 @@
 // ObliviousGmn // Dokuu // October 2020 // Big Brain
 
-static long int oled_timeout = 240000;
+static long int oled_timeout = 60000; // 10 seconds
 
 #include "bongo.c"
 
@@ -12,7 +12,7 @@ extern rgblight_config_t rgblight_config;
 #endif
 
 int RGB_current_mode;
-uint32_t master_sleep = 0;
+uint32_t oled_timer = 0;
 
 layer_state_t layer_state_set_user(layer_state_t state) {
   return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
@@ -28,7 +28,7 @@ void matrix_init_user(void) {
 // Oled Rotations
 #ifdef OLED_DRIVER_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (is_keyboard_master()) {
+  if (is_keyboard_left()) {
     return OLED_ROTATION_270;
   }
     else {
@@ -52,46 +52,38 @@ void render_status_main(void) {
 void render_status_secondary(void) {
   switch (get_highest_layer(layer_state)){
     case _GAME:
-        //render_game_r();
-        testing_game();
-        break;
+      //render_game_r();
+      testing_game();
+      break;
    case _WEAPON:
-        //render_weapon_r();
-        break;
+      //render_weapon_r();
+      break;
     default:
-      print("render anim");
-      render_anim();
+      render_anim(timer_elapsed32(oled_timer) <= oled_timeout);
  }
 }
 
 // Oled Sleeps
 void oled_task_user(void) {
-  if (get_current_wpm() != 000) {
-    oled_on();
-    master_sleep = timer_read32();
-  } else if (timer_elapsed32(master_sleep) > oled_timeout) {
-    oled_off();
-  }
-  
-  // Establishing Sides
-  if (is_keyboard_master()) {
-    render_status_main();
+  if (get_current_wpm() != 000 || timer_elapsed32(oled_timer) <= oled_timeout) {
+    oled_timer = timer_read32();
+
+    // Establishing Sides
+    if (is_keyboard_master()) {
+      render_status_main();
+    } else {
+      render_status_secondary();
+    }
   } else {
-    render_status_secondary();
+    oled_off();
   }
 }
 #endif
 
 // Oled Wakes
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  /*
   if (record->event.pressed) {
     oled_timer = timer_read32();
-  }
-  */
-  if (record->event.pressed) {
-    oled_on();
-    master_sleep = timer_read32();
   }
 
   switch (keycode) {
