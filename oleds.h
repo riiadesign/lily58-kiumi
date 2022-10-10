@@ -13,7 +13,7 @@ void render_logo(void) {
         0xa0, 0xa1, 0xa2, 0xa3, 0xa4,
         0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0};
     oled_write_P(dokuu_logo, false);
-    oled_write_P(PSTR("kiumi"), false);
+    oled_write_P(PSTR("rinaa"), false);
 }
 
 // Gaming layer Testing
@@ -33,7 +33,7 @@ void render_mod_status_gui_alt(uint8_t modifiers) {
     static const char PROGMEM alt_on_1[] = {0x8f, 0x90, 0};
     static const char PROGMEM alt_on_2[] = {0xaf, 0xb0, 0};
 
-// fillers between the modifier icons bleed into the icon frames
+    // fillers between the modifier icons bleed into the icon frames
     static const char PROGMEM off_off_1[] = {0xc5, 0};
     static const char PROGMEM off_off_2[] = {0xc6, 0};
     static const char PROGMEM on_off_1[] = {0xc7, 0};
@@ -100,7 +100,7 @@ void render_mod_status_ctrl_shift(uint8_t modifiers) {
     static const char PROGMEM shift_on_1[] = {0xcd, 0xce, 0};
     static const char PROGMEM shift_on_2[] = {0xcf, 0xd0, 0};
 
-// fillers between the modifier icons bleed into the icon frames
+    // fillers between the modifier icons bleed into the icon frames
     static const char PROGMEM off_off_1[] = {0xc5, 0};
     static const char PROGMEM off_off_2[] = {0xc6, 0};
     static const char PROGMEM on_off_1[] = {0xc7, 0};

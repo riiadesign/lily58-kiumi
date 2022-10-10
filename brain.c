@@ -1,8 +1,7 @@
 // ObliviousGmn // Dokuu // October 2020 // Big Brain
 
-static long int oled_timeout = 60000; // 10 seconds
-
 #include "bongo.c"
+#include "oleds.h"
 
 extern keymap_config_t keymap_config;
 
@@ -12,80 +11,79 @@ extern rgblight_config_t rgblight_config;
 #endif
 
 int RGB_current_mode;
-uint32_t oled_timer = 0;
+uint16_t oled_timer;
+bool oled_awake;
 
 layer_state_t layer_state_set_user(layer_state_t state) {
   return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
 }
 
-// RGB
-void matrix_init_user(void) {
-    #ifdef RGBLIGHT_ENABLE
-      RGB_current_mode = rgblight_config.mode;
-    #endif
-}
+#ifdef OLED_ENABLE
 
-// Oled Rotations
-#ifdef OLED_DRIVER_ENABLE
+// OLED Rotations
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-  if (is_keyboard_left()) {
-    return OLED_ROTATION_270;
-  }
-    else {
-    return OLED_ROTATION_180;
+  if (is_keyboard_master()) {
+      return OLED_ROTATION_270;
+  } else {
+      return OLED_ROTATION_180;
   }
 }
 
-// Master Oled
-void render_status_main(void) {
-    render_space();
-    render_layer_state();
-    render_space();
-    render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
-    render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
-    render_space();
-    render_logo();
-    render_space();
+// Master OLED
+void render_master(void) {
+  render_space();
+  render_layer_state();
+  render_space();
+  render_mod_status_gui_alt(get_mods()|get_oneshot_mods());
+  render_mod_status_ctrl_shift(get_mods()|get_oneshot_mods());
+  render_space();
+  render_logo();
+  render_space();
 }
 
-// Slave Oled
-void render_status_secondary(void) {
+// Slave OLED
+void render_slave(void) {
   switch (get_highest_layer(layer_state)){
     case _GAME:
-      //render_game_r();
-      testing_game();
-      break;
+        //render_game_r();
+        testing_game();
+        break;
    case _WEAPON:
-      //render_weapon_r();
-      break;
+        //render_weapon_r();
+        break;
     default:
-      render_anim(timer_elapsed32(oled_timer) <= oled_timeout);
+       render_anim();
  }
 }
 
-// Oled Sleeps
-void oled_task_user(void) {
-  if (get_current_wpm() != 000 || timer_elapsed32(oled_timer) <= oled_timeout) {
-    oled_timer = timer_read32();
-
-    // Establishing Sides
-    if (is_keyboard_master()) {
-      render_status_main();
+// OLED Sleeps
+bool oled_task_user(void) {
+  
+  // Establishing Sides
+  if (is_keyboard_master()) {
+    if (!oled_awake || timer_elapsed(oled_timer) > OLED_TIMEOUT) {
+      oled_awake = false;
+      oled_off();
     } else {
-      render_status_secondary();
+      render_master();
     }
   } else {
-    oled_off();
+    render_slave();
   }
+
+  return false;
 }
+
 #endif
 
-// Oled Wakes
+// OLED Wakes
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  if (record->event.pressed) {
-    oled_timer = timer_read32();
+  if (record->event.pressed || get_current_wpm() != 000) {
+    oled_timer = timer_read();
+    oled_awake = true;
   }
 
+  // RGB
   switch (keycode) {
     case RGBRST:
       #ifdef RGBLIGHT_ENABLE
@@ -104,6 +102,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       break;
   }
   return true;
+}
+
+// RGB
+void matrix_init_user(void) {
+    #ifdef RGBLIGHT_ENABLE
+      RGB_current_mode = rgblight_config.mode;
+    #endif
 }
 
 #ifdef RGB_MATRIX_ENABLE

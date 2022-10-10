@@ -15,14 +15,7 @@ OLED_DRIVER_ENABLE = yes
 EXTRAKEY_ENABLE= yes # For Media Keys
 WPM_ENABLE = yes
 LTO_ENABLE = yes     # Makes hex file smaller
+EXTRAFLAGS += -flto
 
 # Elite C ..
 BOOTLOADER = qmk-dfu
-
-SRC +=  ./lib/rgb_state_reader.c \
-        ./lib/layer_state_reader.c \
-        ./lib/logo_reader.c \
-        ./lib/keylogger.c \
-        # ./lib/mode_icon_reader.c \
-        # ./lib/host_led_state_reader.c \
-        # ./lib/timelogger.c \

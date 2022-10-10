@@ -4,7 +4,6 @@
 
 #include "layers.h"
 #include "logo.h"
-#include "oleds.h" 
 #include "brain.c"
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
